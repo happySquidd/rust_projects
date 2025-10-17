@@ -44,8 +44,8 @@ fn main() {
     // to exit with a `Result<i32, Err>`.  Get the i32 out of the result and store it in a `sum`
     // variable.  Uncomment the println.  If you did 1a and 1b correctly, the sum should be 20.
     //
-    //let sum =
-    //println!("The child thread's expensive sum is {}", sum);
+    let sum = handle.join().unwrap();
+    println!("The child thread's expensive sum is {}", sum);
 
     // Time for some fun with threads and channels!  Though there is a primitive type of channel
     // in the std::sync::mpsc module, I recommend always using channels from the crossbeam crate,
@@ -55,16 +55,16 @@ fn main() {
     // flow of execution works.  Once you understand it, alter the values passed to the `pause_ms()`
     // calls so that both the "Thread B" outputs occur before the "Thread A" outputs.
 
-    /*
+    
     let (tx, rx) = channel::unbounded();
     // Cloning a channel makes another variable connected to that end of the channel so that you can
     // send it to another thread.
     let tx2 = tx.clone();
 
     let handle_a = thread::spawn(move || {
-        pause_ms(0);
+        pause_ms(300);
         tx2.send("Thread A: 1").unwrap();
-        pause_ms(200);
+        pause_ms(400);
         tx2.send("Thread A: 2").unwrap();
     });
 
@@ -73,7 +73,7 @@ fn main() {
     let handle_b = thread::spawn(move || {
         pause_ms(0);
         tx.send("Thread B: 1").unwrap();
-        pause_ms(200);
+        pause_ms(100);
         tx.send("Thread B: 2").unwrap();
     });
 
@@ -88,12 +88,33 @@ fn main() {
     // Join the child threads for good hygiene.
     handle_a.join().unwrap();
     handle_b.join().unwrap();
-    */
+    
 
     // Challenge: Make two child threads and give them each a receiving end to a channel.  From the
     // main thread loop through several values and print each out and then send it to the channel.
     // On the child threads print out the values you receive. Close the sending side in the main
     // thread by calling `drop(tx)` (assuming you named your sender channel variable `tx`).  Join
     // the child threads.
+    let (tx, rx) = channel::unbounded();
+    let rx2 = rx.clone();
+
+    let ct1 = thread::spawn(move || {
+        for msg in rx {
+            println!("Message recieved in thread 1: {}", msg);
+        }
+    });
+    let ct2 = thread::spawn(move || {
+        for msg in rx2 {
+            println!("Message recieved in thread 2: {}", msg);
+        }
+    });
+    for x in 0..20 {
+        let _ = tx.send(x).unwrap();
+        pause_ms(20);
+    }
+    drop(tx);
+    ct1.join().unwrap();
+    ct2.join().unwrap();
+
     println!("Main thread: Exiting.")
 }
