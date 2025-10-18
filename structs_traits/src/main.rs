@@ -52,8 +52,15 @@ fn main() {
     // Hint: Define the generic type between the function name and open paren:
     //       fn function_name<T: Bite>(...)
     //
-    // bunny_nibbles(&mut carrot);
-    // println!("Bunny nibbles for awhile: {:?}", carrot);
+    bunny_nibbles(&mut carrot);
+    println!("Bunny nibbles for awhile: {:?}", carrot);
+
+    fn bunny_nibbles<T: Bite>(carrot: &mut T) {
+        carrot.bite();
+        carrot.bite();
+        carrot.bite();
+        carrot.bite();
+    }
 }
 
 
@@ -64,7 +71,7 @@ struct Carrot {
 
 impl Bite for Carrot {
     fn bite(self: &mut Self) {
-        // Eat 20% of the remaining carrot. It may take awhile to eat it all...
+        // Eat 20% of the remaining carrot. It may take a while to eat it all...
         self.percent_left *= 0.8;
     }
 }
